@@ -17,8 +17,6 @@ function getOffset(errorScale, position){
 
 }
 
-const image = context.getImageData(0,0, imageWidth, imageHeight);
-
 const newResolution = [resolution[0] * scaleFactor, resolution[1] * scaleFactor];
 
 let size = (graphicWidth > graphicHeight) ? graphicHeight * 0.6 : graphicWidth * 0.6;

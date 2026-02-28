@@ -51,7 +51,6 @@ const newScaleY = Math.floor(height / newResolution[1]);
 const newErrorScaleX = (width - newResolution[0] * newScaleX) / (newResolution[0] * newScaleX);
 const newErrorScaleY = (height - newResolution[1] * newScaleY) / (newResolution[1] * newScaleY);
 
-let image = context.getImageData(0,0, imageWidth, imageHeight);
 const colInterpolation = context.createImageData(width, imageHeight);
 const newImage = context.createImageData(width, height);
 
