@@ -1,0 +1,331 @@
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+/* body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+} */
+
+body {
+
+  position: absolute;
+
+  background-color: rgb(30, 30, 33);
+  width: 100%;
+  height: 100%;
+
+  margin: 0px;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1;
+}
+
+#panel{
+
+  position: absolute;
+  left: 0px;
+  width: 20%;
+  top: 0px;
+  bottom: 0px;
+
+  padding: 16px;
+  padding-bottom: 0px;
+  /* padding-right: 0px; */
+
+  background-color: white;
+
+  z-index: 10;
+
+}
+
+#heading{
+
+  display: flex;
+  position: relative;
+  padding: 16px 16px 0px 16px;
+  width: 80%;
+  align-items: center;
+
+}
+
+#title{
+
+  display: inline;
+  font-size: 18px;
+  font-weight: 600;
+
+}
+
+#github{
+
+  position: absolute;
+
+  font-size: 16px;
+  display: inline;
+  right: 0px;
+}
+
+#github-logo{
+
+  width: 25px;
+  aspect-ratio: 1/1;
+
+}
+
+#description{
+
+  padding-left: 16px;
+  font-size: 14px;
+  margin: 0px;
+
+}
+
+#interface{
+
+  padding: 16px;
+  padding-right: 0px;
+  padding-bottom: 0px;
+
+}
+
+.algorithm{
+
+  /* box-sizing: content-box; */
+
+  width: 80%;
+
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 8px;
+  border-color: rgb(0, 0, 0);
+
+  padding: 16px;
+  margin-bottom: 20px;
+  margin-top: 10px;
+
+}
+
+.container{
+
+  display: flex;
+  position: relative;
+  width: 100%;
+  height: 40px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+
+  align-items: center;
+
+}
+
+#options{
+
+  position: absolute;
+  left: 0px;
+
+  padding: 8px;
+
+  border-radius: 4px;
+
+  font-size: 15px;
+  width: 80%;
+
+}
+
+#infoButton{
+
+  box-sizing: content-box;
+  position: absolute;
+  right: 0px;
+  border-style: solid;
+  border-width: 1px;
+
+  padding: 1px;
+  aspect-ratio: 1 / 1;
+
+  width: 12%;
+
+  font-size: 15px;
+  border-radius: 100%;
+
+  color: black;
+  background-color: white;
+
+}
+
+#information{
+
+  position: absolute;
+  top: 6vh;
+  bottom: 6vh;
+  left: 20vw;
+  right: 10vw;
+  padding: 1%;
+  /* margin: 0px; */
+
+  margin-left: 32px;
+
+  z-index: 2;
+  background-color: rgb(20, 20, 23);
+  color: white;
+  overflow: auto;
+
+}
+
+#exitInformation{
+
+  position: absolute;
+  top: 2px;
+  right: 0px;
+
+  aspect-ratio: 1/1;
+
+  padding: 0px;
+  height: auto;
+  width: 4%;
+
+}
+
+.controls{
+
+  display: flex;
+  width: 100%;
+}
+
+.control{
+
+  position: relative;
+
+  flex: 1 1 0;
+  width: 0px;
+  height : 20px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  background-color: rgba(242, 241, 255, 0);
+}
+
+
+#resolutionSlider{
+
+  width: 100%;
+
+}
+
+#zoomSlider{
+
+  width: 100%;
+}
+
+/* #graphic{
+
+  display: flex;
+
+  position: absolute;
+  left: 20%;
+  right: 0px;
+  height: 100%;
+  top: 0px;
+  bottom: 0px;
+
+  margin-left: 32px;
+
+  justify-content: center;
+  align-content: center;
+
+  background-color: rgb(30, 30, 33);
+} */
+
+#visual{
+
+  position: absolute;
+
+  /* display: block; */
+  /* setting overflow or minimum fixes canvas expanding like crazy, im not sure why its like 50% bigger than the container, 
+  but this still applies https://stackoverflow.com/questions/36247140/why-dont-flex-items-shrink-past-content-size */
+  /* min-width: 0px;
+  min-height: 0px; */
+  /* overflow: hidden; */
+}
+
+input{
+
+  position: relative;
+  box-sizing: content-box;
+}
+
+p{
+
+  margin: 0px;
+  white-space: normal;
+}
+
+li{
+
+  white-space: normal; 
+}
+
+input{
+
+  box-sizing: content-box;
+}
+
+button {
+  box-sizing: content-box;
+
+  border-radius: 8px;
+  border: 1px solid black;
+  /* padding: 0.6em 1.2em; */
+  /* font-size: 1em; */
+  /* font-weight: 500; */
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
