@@ -4,3 +4,5 @@ a visualization of various image related algorithms like
 - chroma-subsampling
 - bilinear interpolation
 - bicubic interpolation
+
+live here https://tinysuperion.github.io/imgvis/
