@@ -420,6 +420,8 @@ let panelWidth;
 let errorScaleX; // the error of the scale of the resolution to the dimensions per pixel. 
 let errorScaleY; // since a fraction of a pixel cant be used, the scale is floored and the error is accumulated until a full pixel can be inserted
 
+let imageHistory = []; // stores images after change in order to undo 
+
 function App() {
 
   const [resolution, setResolution] = useState([10,10]);
@@ -446,7 +448,7 @@ function App() {
   )
 
   const [algorithm, setAlgorithm] = useState(); // name of selected algorithm
-  const[infoVisibility, setInfoVisibility] = useState("hidden"); // information visibility
+  const [infoVisibility, setInfoVisibility] = useState("hidden"); // information visibility
   const [description, setDescription] = useState(); // description of selected algorithm
   const [position, setPosition] = useState([]); // left top offsets for canvas
 
@@ -826,7 +828,6 @@ function App() {
 
               <button className='control' onClick={()=>{
 
-
                 // const canvas = document.getElementById("graphic");
                 const canvas = document.getElementById("visual");
                 const selection = document.getElementById("options");
@@ -836,45 +837,34 @@ function App() {
                   willReadFrequently: true,
                 });
 
-                
+                if (!imageWidth){
+                  // if this isnt set, an image doesnt exist
+
+                  return;
+                }
+
+                const image = context.getImageData(0, 0, imageWidth, imageHeight);
+
+                imageHistory.push({
+
+                  "image" : new ImageData(image.data.slice(), imageWidth, imageHeight),
+                  "scaleX" : scaleX,
+                  "scaleY" : scaleY,
+                  "errorScaleX" : errorScaleX,
+                  "errorScaleY" : errorScaleY,
+                })
 
                 if (selection.value == "quantization"){
 
-                  if (!imageWidth){
-
-                    return;
-                  }
-
-                  // console.log(scale);
-
-                  // const pixel = context.getImageData(startX, imageSize-1 + startY, 1,1);
-                  // console.log(pixel.data);
-
-                  // const image = context.getImageData(startX, startY, imageSize, imageSize);
-                  const image = context.getImageData(0, 0, imageWidth, imageHeight);
-
                   const octree = new Octree(8);
 
-                  // pixel scaling (more info found in the image generation)
-
+                  // error correction since scale is floored (fractions of a pixel arent good)
                   let errorX = 0;
                   let errorY = 0;
 
-                  // console.log(scaleX, scaleY);
-                  // console.log(imageWidth, imageWidth - Math.floor(scaleX) * resolution[0]);
-
-                  // console.log(errorScaleX * Math.floor(scaleX));
-
                   for (let row = 0; row < imageHeight; row+=scaleY){
 
-                    // console.log("row: ", row);
-
                     for (let col = 0; col < imageWidth; col+=scaleX){
-
-                      // const pixel = context.getImageData(row  + startX - 1, col + startY - 1, 1,1); // i reckon its more efficient to get the entire image rather than pixel by pixel but this is a lot cleaner to look at and i dont think its worth the time it saves
-                      // octree.insert({red : pixel.data[0], green : pixel.data[1], blue : pixel.data[2]});
-
-                      // console.log("col:", col);
 
                       errorX += errorScaleX * scaleX;
 
@@ -905,22 +895,11 @@ function App() {
 
                   octree.reduce(colors);
 
-                  // for (let row = scale; row <= imageSize; row+= scale){
-
-                  //   for (let col = scale; col <= imageSize; col+= scale){
-
                   for (let row = 0; row < imageWidth; row++){
 
                     for (let col = 0; col < imageHeight; col++){
                   
                       // applying palette
-
-                      // const pixel = context.getImageData(row + startX, col + startY, 1,1); // i reckon its more efficient to get the entire image rather than pixel by pixel but this is a lot cleaner to look at and its not too slow
-                      // console.log(pixel.data, row, col);
-                      // const color = octree.getColor({red : pixel.data[0], green : pixel.data[1], blue : pixel.data[2]}); 
-                      // pixel.data[0] = color.red / color.pixels;
-                      // pixel.data[1] = color.green / color.pixels;
-                      // pixel.data[2] = color.blue / color.pixels;
 
                       const pixelIndex = (col * 4) + (row * imageWidth * 4);
                       const color = octree.getColor({red : image.data[pixelIndex], green : image.data[pixelIndex + 1], blue : image.data[pixelIndex + 2]});
@@ -943,100 +922,11 @@ function App() {
 
                 else if (selection.value == "chroma"){
 
-                  const image = context.getImageData(0, 0, imageWidth, imageHeight);
-
-                  // converting each color to hsl back to rgb and seeing if it works
-
-                  // let hueSaturation = rgbToHsl({red : 255, green: 0, blue: 0});
-                  // console.log("red:", hueSaturation);
-                  // console.log("red: ", hslToRgb(hueSaturation.hue, hueSaturation.saturation, 0.5));
-
-                  // hueSaturation = rgbToHsl({red : 0, green: 255, blue: 0});
-                  // console.log("green:", hueSaturation);
-                  // console.log("green:", hslToRgb(hueSaturation.hue, hueSaturation.saturation, 0.5));
-
-                  // let errorX = 0;
-                  // let errorY = 0;
-
-                  console.log(image.data);
-
-                  // console.log(errorScaleX, errorScaleY);
-                  // console.log(scaleX, errorScaleX * scaleX);
-
-                  // for (let row = 0; row < imageHeight; row += 2 * Math.floor(scaleY)){
-
-                  //   for (let col = 0; col < imageWidth; col += 4 * Math.floor(scaleX)){
-
-                  // for (let row = 0; row < 1; row += 2 * Math.floor(scaleY)){
-
-                  //   for (let col = 0; col < Math.floor(scaleX) * 10; col += 4 * Math.floor(scaleX)){
-
                   for (let row = 0; row < scaleY * resolution[1]; row += 2 * scaleY){
 
                     for (let col = 0; col < scaleX * resolution[0]; col += 4 * scaleX){
 
-                      // console.log(row, col);
-
-                      // const index = row * imageSize * 4 + col*4;
-                      // const [red, green, blue] = [image.data[index], image.data[index+1], image.data[index+2]];
-
-                      // const luma = linearize(red/255) * 0.2126  + linearize(green/255) * 0.7152 + linearize(blue/255) * 0.0722;
-
-                      // const luma = red/255 * 0.2126  + green/255 * 0.7152 + blue/255 * 0.0722
-                      // const hueSaturation = rgbToHsl({red : red, green : green, blue : blue});
-                      // const rgb = hslToRgb(hueSaturation.hue, hueSaturation.saturation, luma);
-
                       let colors = []; // represents a 4x2 grid. using chroma subsampling just happens to be less impactful on quality using a 4x2 grid
-
-                      // const origin = row * 4 * imageWidth + col * 4;
-
-                      // for (let gridRow = 0; gridRow < 2*scaleY; gridRow += scaleY){
-
-                      //   // error accumulation to correct for the scaling to proper dimensions being floored
-
-                      //   errorY += errorScaleY * scaleY;
-
-                      //   // correct for inserted pixels (not exactly 1 due to rounding errors)
-                      //   while (errorY > 0.9999999999){
-
-                      //     errorY -= 1;
-                      //     gridRow++;
-                      //   }
-
-                      //   // bounds checking
-                      //   if ((row + gridRow) >= imageWidth){
-
-                      //     break;
-                      //   }
-
-                      //   let currentRow = [];
-
-                      //   for (let gridCol = 0; gridCol < 4 * scaleX; gridCol += scaleX){
-
-                      //     // error accumulation to correct for the scaling to proper dimensions being floored
-
-                      //     errorX += errorScaleX * scaleX;
-
-                      //     // correct for inserted pixels (not exactly 1 due to rounding errors)
-                      //     while (errorX > 0.9999999999){
-
-                      //       errorX -= 1;
-                      //       gridCol++;
-                      //     }
-
-                      //     // bounds checking
-                      //     if (col + gridCol * scaleY >= imageHeight){
-
-                      //       break;
-                      //     }
-
-                      //     const index = origin + gridRow * scaleX * 4 * imageWidth + gridCol * 4 * scaleY;
-                      //     currentRow.push({red : image.data[index] / 255, green : image.data[index+1] / 255, blue : image.data[index+2] / 255})
-                      //     // console.log({red : image.data[index], green : image.data[index+1], blue : image.data[index+2]});
-                      //   }
-
-                      //   colors.push(currentRow);
-                      // }
 
                       for (let gridRow = 0; gridRow < 2; gridRow++){
                         // console.log("grid row: ", gridRow);
@@ -1056,19 +946,8 @@ function App() {
 
                         for (let gridCol = 0; gridCol < 4; gridCol++){
 
-                          // let colOffset = 0;
                           let colOffset = Math.floor(errorScaleX * (col + gridCol * scaleX));
-                          // colOffset = (colOffset > 0) ? colOffset : 0;
-
-                          // // console.log( (colOffset) ? 3 : 2);
-
-                          // console.log(gridRow, gridCol, colOffset);
-                          // console.log(col, gridCol * scaleX);
-                          // console.log(errorScaleX, col + gridCol * scaleX);
-
-                          // console.log("col");
-                          // errorX += errorScaleX * Math.floor(scaleX);
-
+                   
                           // bounds checking
                           if ((col + colOffset + gridCol * scaleX) >= imageWidth){
                           // if ((col + colOffset + gridCol * Math.floor(scaleX)) >= Math.floor(scaleX) * resolution[0]){
@@ -1076,37 +955,22 @@ function App() {
                             break;
                           }
 
-                          // const index = origin + gridRow * scaleX * 4 * imageWidth + gridCol * 4 * scaleY;
                           const index = ((row + rowOffset) * imageWidth * 4 + (col + colOffset) * 4) + (gridRow * imageWidth * 4 * Math.floor(scaleY) + gridCol * 4 * Math.floor(scaleX));
-                          
-                          // console.log("row: ", row + rowOffset + gridRow * Math.floor(scaleY), "col: ", col + colOffset + gridCol * Math.floor(scaleX), "index: ", index);
-                          
+                                                    
                           currentRow.push({red : image.data[index] / 255, green : image.data[index+1] / 255, blue : image.data[index+2] / 255})
                         }
 
                         colors.push(currentRow);
                       }
 
-                      // console.log(colors);
-
                       const secondRow = (document.getElementById("chromaScheme").value == "oneRow") ? false : true;
                       const lumaChroma = chroma(colors, secondRow);
-                      // console.log(lumaChroma);
 
-                      // console.log(luma, hueSaturation, rgb);
 
                       // filling out the pixels
 
-
-                      // make rowoffset a higher scope so it carries over all the time
-
                       for (let gridRow = 0; gridRow < lumaChroma.luma.length; gridRow++){
 
-                        // console.log("row!");
-
-                        // offset to not overwrite added pixels, also honestly i expected to find issues with flooring it due to rounding errors,
-                        // but they arent happening so thats cool. i guess i should probably protect it against it somewhat anyway incase its just a weird coincidence
-                       
                         // shenanigans to avoid issues with rounding errors
                         let previousError = errorScaleY * (row + gridRow * scaleY); // "previous" since row + gridRow is the end of the previous pixel and the start of the current
 
@@ -1116,7 +980,6 @@ function App() {
                         }
 
 
-                        // let rowOffset = Math.floor(errorScaleY * (row + gridRow * Math.floor(scaleY)));
                         let rowOffset = Math.floor(previousError);
                         rowOffset = (rowOffset > 0) ? rowOffset : 0;
 
@@ -1131,22 +994,13 @@ function App() {
                           error = Math.round(error);
                         }
 
-                        // let currentErrorY = Math.floor(errorScaleY * (row + gridRow * Math.floor(scaleY) + Math.floor(scaleY))) - rowOffset; 
                         let currentErrorY = Math.floor(error) - Math.floor(previousError); // all that needs to be known is whether or not a whole pixel is formed from the previous, ex: 0.5 -> 1
 
-                        // console.log("error y: ", currentErrorY, errorScaleY * (row + gridRow * scaleY + scaleY));
-                        
-                        // if (currentErrorY > 0){
-
-                          // currentErrorY--;
-                          additionalRow = currentErrorY;
-                        // }
+                        additionalRow = currentErrorY;
 
                         for (let gridCol = 0; gridCol < lumaChroma.luma[0].length; gridCol++){
 
-                          // let colOffset = 0;
                           let colOffset = errorScaleX * (col + gridCol * scaleX);
-                          // colOffset = (colOffset > 0) ? colOffset : 0;
 
                           if (Math.abs(Math.round(colOffset) - colOffset) < 0.0000000001){
 
@@ -1156,7 +1010,6 @@ function App() {
                           colOffset = Math.floor(colOffset);
 
                           let additionalCol = 0;
-                          // let additionalCol = Math.floor(errorScaleX * (col + gridCol * Math.floor(scaleX)));
                           let currentErrorX = errorScaleX * (col + gridCol * scaleX + scaleX);
 
                           if (Math.abs(Math.round(currentErrorX) - currentErrorX) < 0.0000000001){
@@ -1166,25 +1019,12 @@ function App() {
 
                           currentErrorX = Math.floor(currentErrorX);
 
-                          additionalCol = currentErrorX - colOffset;
-
-                          // console.log("col: ", col, gridCol);
-                          // console.log(errorScaleX, row, gridRow, scaleX);
-                          // console.log("current error: ", currentErrorX, errorScaleX * (col + gridCol* scaleX), colOffset);
-                          
-                          // if (currentErrorX > 0){
-
-                            // currentErrorX--;
-                            // additionalCol = currentErrorX;
-                          // }
-                        
+                          additionalCol = currentErrorX - colOffset;                        
 
                           const chroma = lumaChroma.chroma[gridRow][Math.floor(gridCol/2)]
                           const luma = lumaChroma.luma[gridRow][gridCol];
 
                           const rgb = hslToRgb(chroma.hue, chroma.saturation, luma);
-
-                          // console.log("rgb: ", rgb);
 
                           for (let pixelRow = row + rowOffset + gridRow * scaleY; pixelRow < row + rowOffset + additionalRow + gridRow * scaleY + scaleY; pixelRow++){
 
@@ -1204,8 +1044,6 @@ function App() {
                       }
 
                   }
-
-                  // console.log("end");
 
                   context.putImageData(image, 0, 0);
 
@@ -1365,12 +1203,6 @@ function App() {
                       if ((Math.floor(actualRow) + 1) < resolution[1]){
 
                         // interpolate bottom left to bottom right then interpolate the 2 interpolations using the fraction of row as alpha
-                        
-                        // const red = image.data[index + imageWidth * 4 * scaleX] * (1- colAlpha) + image.data[index + imageWidth * 4 * scaleX + 4*scaleY] * colAlpha;
-                        // const green = image.data[index + imageWidth * 4 * scaleX + 1] * (1- colAlpha) + image.data[index + imageWidth * 4 * scaleX + 4* scaleY + 1] * colAlpha;
-                        // const blue = image.data[index + imageWidth * 4 * scaleX + 2] * (1- colAlpha) + image.data[index + imageWidth * 4 * scaleX + 4*scaleY + 2] * colAlpha;
-
-                        // console.log("offset stuff: ", getOffset(errorScaleY, Math.floor(actualRow) * scaleY + scaleY), rowOffset);
 
                         const red = image.data[index + imageWidth * 4 * scaleY + nextRowOffset] * (1- colAlpha) + image.data[index + imageWidth * 4 * scaleY + 4*scaleX + nextRowOffset + nextColOffset] * colAlpha;
                         const green = image.data[index + imageWidth * 4 * scaleY + nextRowOffset + 1] * (1- colAlpha) + image.data[index + imageWidth * 4 * scaleY + 4* scaleX + nextRowOffset + nextColOffset + 1] * colAlpha;
@@ -1474,19 +1306,6 @@ function App() {
 
                           const pixelIndex = origin + pixelRow * width * 4 + pixelCol * 4;
 
-                          // console.log(current, pixelIndex);
-
-                          // if (rowAlpha != 0 || colAlpha != 0){
-
-                          //   newImage.data[pixelIndex] = 255;
-                          //   newImage.data[pixelIndex+1] = 255;
-                          //   newImage.data[pixelIndex+2] = 255;
-                          //   newImage.data[pixelIndex+3] = 255;
-
-                          //   continue;
-
-                          // }
-
                           newImage.data[pixelIndex] = current.red;
                           newImage.data[pixelIndex+1] = current.green;
                           newImage.data[pixelIndex+2] = current.blue;
@@ -1497,11 +1316,6 @@ function App() {
                     }
 
                   }
-               
-                  // imageSize = size;         
-                  // scale = newScale;      
-                  // startX = (canvas.width - size)/2;
-                  // startY = (canvas.height - size)/2
 
                   imageWidth = width;
                   imageHeight = height;
@@ -2080,7 +1894,31 @@ function App() {
 
 
               }}>run</button>
-              <button className='control'>reset</button>
+              <button className='control' onClick={()=>{
+
+                const canvas = document.getElementById("visual");
+                const context = canvas.getContext("2d");
+
+                context.clearRect(0, 0, canvas.width, canvas.height);
+
+                const data = imageHistory[imageHistory.length - 1];
+
+                imageWidth = data["image"].width;
+                imageHeight = data["image"].height;
+                scaleX = data["scaleX"];
+                scaleY = data["scaleY"];
+                errorScaleX = data["errorScaleX"];
+                errorScaleY = data["errorScaleY"];
+
+                canvas.width = imageWidth;
+                canvas.height = imageHeight;
+
+                context.putImageData(data["image"], 0, 0);
+                setPosition([panelWidth + (graphicWidth - imageWidth)/2, (graphicHeight - imageHeight)/2]);
+              
+                imageHistory.pop();
+
+              }}>undo</button>
 
             </div>
 
@@ -2313,7 +2151,6 @@ function App() {
               context.drawImage(image, 0,0);
 
               setPosition([(graphicWidth - imageWidth) / 2 + panelWidth, (graphicHeight - imageHeight) / 2]);
-
             }
           }}></input>          
 
@@ -2325,8 +2162,6 @@ function App() {
 
               const upload = document.getElementById("upload");
               upload.click();      
-              
-              
 
             }}>upload</button>
 
